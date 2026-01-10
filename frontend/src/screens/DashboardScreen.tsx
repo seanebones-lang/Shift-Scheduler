@@ -1,65 +1,63 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Appbar, Button, Card, Title, Paragraph, FAB } from 'react-native-paper';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import { Appbar, Card, Title, Paragraph, FAB } from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
   Dashboard: undefined;
-  // Add more later: Staff, Sales, etc.
+  Staff: undefined;
+  Forecast: undefined;
+  Optimize: undefined;
+  Schedule: undefined;
 };
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
 const DashboardScreen = ({ navigation }: Props) => {
-  const handleAction = (action: string) => {
-    Alert.alert('Coming Soon', `${action} feature will be implemented here.`);
+  const handleNavigate = (screen: keyof RootStackParamList) => {
+    navigation.navigate(screen);
   };
 
   return (
     <>
       <Appbar.Header>
-        <Appbar.Content title="Shift Scheduler" />
+        <Appbar.Content title="ShiftAI Scheduler" />
       </Appbar.Header>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Title style={styles.title}>Dashboard</Title>
-        <Paragraph style={styles.subtitle}>Manage your shifts with AI power</Paragraph>
+        <Paragraph style={styles.subtitle}>AI-Powered Shift Optimization</Paragraph>
         <View style={styles.buttonsContainer}>
-          <Card style={styles.card} onPress={() => handleAction('Manage Staff')}>
+          <Card style={styles.card} onPress={() => handleNavigate('Staff')}>
             <Card.Content>
-              <Title>Manage Staff</Title>
-              <Paragraph>Add or edit staff members</Paragraph>
+              <Title>👥 Manage Staff</Title>
+              <Paragraph>Add, edit, or remove staff members with wages & skills</Paragraph>
             </Card.Content>
           </Card>
-          <Card style={styles.card} onPress={() => handleAction('Upload Sales')}>
+          <Card style={styles.card} onPress={() => handleNavigate('Forecast')}>
             <Card.Content>
-              <Title>Sales History</Title>
-              <Paragraph>Upload historical sales data</Paragraph>
+              <Title>📈 Sales & Forecast</Title>
+              <Paragraph>Input historical sales for next 7-day demand prediction</Paragraph>
             </Card.Content>
           </Card>
-          <Card style={styles.card} onPress={() => handleAction('Forecast')}>
+          <Card style={styles.card} onPress={() => handleNavigate('Optimize')}>
             <Card.Content>
-              <Title>Generate Forecast</Title>
-              <Paragraph>Demand prediction</Paragraph>
+              <Title>⚙️ Optimize Schedule</Title>
+              <Paragraph>Generate cost-optimal shifts based on forecast & staff</Paragraph>
             </Card.Content>
           </Card>
-          <Card style={styles.card} onPress={() => handleAction('Optimize')}>
+          <Card style={styles.card} onPress={() => handleNavigate('Schedule')}>
             <Card.Content>
-              <Title>Optimize Schedule</Title>
-              <Paragraph>AI shift assignment</Paragraph>
-            </Card.Content>
-          </Card>
-          <Card style={styles.card} onPress={() => handleAction('View Schedule')}>
-            <Card.Content>
-              <Title>View Schedule</Title>
-              <Paragraph>Calendar view</Paragraph>
+              <Title>📅 View Schedule</Title>
+              <Paragraph>Calendar view of assigned shifts & total cost</Paragraph>
             </Card.Content>
           </Card>
         </View>
       </ScrollView>
       <FAB
-        icon="plus"
+        icon="refresh"
+        label="Refresh Data"
         style={styles.fab}
-        onPress={() => handleAction('Quick Add')}
+        onPress={() => {/* TODO: Reload storage */}}
       />
     </>
   );
