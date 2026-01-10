@@ -9,8 +9,8 @@ import OnboardingScreen from './src/screens/OnboardingScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import StaffScreen from './src/screens/StaffScreen';
 import ForecastScreen from './src/screens/ForecastScreen';
-// TODO: import OptimizeScreen from './src/screens/OptimizeScreen';
-// import ScheduleScreen from './src/screens/ScheduleScreen';
+import OptimizeScreen from './src/screens/OptimizeScreen';
+import ScheduleScreen from './src/screens/ScheduleScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -27,12 +27,12 @@ export default function App() {
       setIsOnboarded(!!onboarded);
     } catch (e) {
       console.error('Onboarding check error:', e);
-      setIsOnboarded(true); // Default to dashboard
+      setIsOnboarded(true);
     }
   };
 
   if (isOnboarded === null) {
-    return null; // Splash/loading
+    return null;
   }
 
   return (
@@ -41,20 +41,45 @@ export default function App() {
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{
-            headerShown: false,
+            headerStyle: { backgroundColor: '#6200ee' },
+            headerTintColor: '#fff',
             contentStyle: { backgroundColor: '#f5f5f5' },
           }}
         >
           {isOnboarded ? (
             <>
-              <Stack.Screen name="Dashboard" component={DashboardScreen} />
-              <Stack.Screen name="Staff" component={StaffScreen} />
-              <Stack.Screen name="Forecast" component={ForecastScreen} />
-              {/* <Stack.Screen name="Optimize" component={OptimizeScreen} /> */}
-              {/* <Stack.Screen name="Schedule" component={ScheduleScreen} /> */}
+              <Stack.Screen 
+                name="Dashboard" 
+                component={DashboardScreen} 
+                options={{ title: 'ShiftAI Dashboard' }} 
+              />
+              <Stack.Screen 
+                name="Staff" 
+                component={StaffScreen} 
+                options={{ title: 'Staff Management' }} 
+              />
+              <Stack.Screen 
+                name="Forecast" 
+                component={ForecastScreen} 
+                options={{ title: 'Demand Forecast' }} 
+              />
+              <Stack.Screen 
+                name="Optimize" 
+                component={OptimizeScreen} 
+                options={{ title: 'Optimize Shifts' }} 
+              />
+              <Stack.Screen 
+                name="Schedule" 
+                component={ScheduleScreen} 
+                options={{ title: 'Schedule Calendar' }} 
+              />
             </>
           ) : (
-            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+            <Stack.Screen 
+              name="Onboarding" 
+              component={OnboardingScreen} 
+              options={{ headerShown: false }} 
+            />
           )}
         </Stack.Navigator>
       </NavigationContainer>
