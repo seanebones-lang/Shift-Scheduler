@@ -1,1 +1,382 @@
-{"productOverview":{"name":"ShiftAI Scheduler","tagline":"AI-Driven Mobile Scheduling: Slash Overtime 30%+, Cover Peaks Effortlessly","targetUsers":"Non-technical managers of SMB service businesses (5-500 staff: cafes, spas, retail with walk-ins/appointments)","valueProp":"AI forecasts demand & optimizes shifts to cut labor costs 25-40%, maintain >90% coverage, with equitable, compliant mobile-first workflows."},"features":[{"name":"Demand Forecasting","description":"Prophet/LSTM models predict 15-min demand intervals over 7 days, incorporating multi-source data with 80-95% confidence bands.","inputs":["Historical POS/sales CSV uploads (camera scan/mobile drag-drop)","Reservations APIs","Weather (OpenWeatherMap)","Local events (Google Calendar/Eventbrite)","Foot traffic sensors (API)"],"outputs":["Hourly/15-min forecasts JSON","Confidence intervals visualization","Surge alerts (push notifications)"]},{"name":"Staff Optimization","description":"OR-Tools/PuLP solver minimizes cost under constraints: skills, availability, rest (11h min), max 8h shifts, 10-20% no-show buffer, fuzzy skills matching, equitable rotation (bias-free via randomization/seeded fairness).","inputs":["Staff profiles CSV (skills/wages/availability)","Manual overrides","Absences (Google Cal sync)","Business rules (ratios/locations)"],"outputs":["Optimal schedule JSON","Cost breakdown","What-if sims","Compliance report"]},{"name":"Interactive Scheduling","description":"Touch-drag calendar for edits, multi-location views, real-time AI re-optimize.","inputs":["Generated schedule","User drags/swipes"],"outputs":["Updated schedule","PDF/ICS exports","SMS/Email notifications (Twilio/SendGrid)"]},{"name":"Onboarding & Integrations","description":"Wizard for quick setup, API/CSV imports, HR sync.","inputs":["Business type/staff CSV","API keys"],"outputs":["Configured profile","First forecast/schedule"]},{"name":"Analytics & Simulations","description":"A/B vs manual, KPI dashboards, scenario testing (e.g., +50% surge).","inputs":["Historical schedules"],"outputs":["ROI reports","NPS surveys","Benchmark charts"]}],"uiMockups":[{"screen":"Onboarding Wizard","description":"Step-by-step mobile carousel: business type picker → staff CSV camera upload → rules setup.","keyElements":["Progress bar","Camera/Drag-drop zone","AI quick-setup suggestions","Next/Back buttons"]},{"screen":"Dashboard","description":"Home with forecast peaks, generate button, upcoming alerts.","keyElements":["Peak demand graph (interactive zoom)","Generate Schedule FAB","Push notification bell","KPI cards (savings/coverage)"]},{"screen":"Schedule Calendar","description":"Weekly view with 15-min slots, drag-to-assign staff, color-coded skills/locations.","keyElements":["FullCalendar-like touch grid","Staff sidebar (search/filter)","Drag-drop shifts","Re-optimize button","Export drawer"]},{"screen":"What-If Simulator","description":"Sliders for scenarios (demand +50%, staff absence), instant re-run.","keyElements":["Scenario sliders","Before/After comparison","Cost delta chart","Apply button"]},{"screen":"Analytics","description":"Charts for KPIs, A/B manual vs AI.","keyElements":["Line/bar charts","Export PDF","Share report"]}],"technicalArchitecture":{"stack":{"frontend":"React Native (Expo) for iOS/Android/PWA + FullCalendar/react-native-calendars for drag-drop","backend":"Python FastAPI + Celery for async AI jobs","ai":"Prophet/scikit-learn for forecasting, OR-Tools for optimization (Dockerized solvers)"},"dataFlow":"Mobile app uploads data → FastAPI endpoint triggers Celery job (forecast → optimize) → WebSocket/push updates UI → Offline sync via Realm/SQLite.","integrations":["Google Calendar/BambooHR (OAuth)","POS (Square/Lightspeed API)","Weather/Eventbrite","Twilio/SendGrid (notifications)","PDFMake (exports)"]},"metricsAndROI":{"kpis":[{"name":"Overtime Reduction","target":"25-40%","benchmark":"30% avg (10-staff cafe: $450 AI vs $650 manual)"},{"name":"Service Level Coverage","target":">90%","benchmark":"95% at peak demand"},{"name":"Employee NPS","target":">8/10","benchmark":"Fair rotation improves satisfaction 20%"},{"name":"Solver Scalability","target":"\u003c5min for 500 staff","benchmark":"OR-Tools handles 10k variables"}],"pilotExample":"Cafe (50 cust/hr lunch): Forecast peak → 3 basic +1 advanced barista ($450 cost, 31% savings vs manual $650); zero understaffing, compliant rests."},"implementationRoadmap":[{"phase":"Phase 1: MVP Core","deliverables":["Mobile onboarding","Basic Prophet forecast","OR-Tools scheduler","Calendar UI","CSV import"],"timeline":"4 weeks"},{"phase":"Phase 2: Polish & Integrations","deliverables":["Drag-drop edits","What-if sims","Notifications","Weather/HR integrations","Offline mode"],"timeline":"3 weeks"},{"phase":"Phase 3: Analytics & Scale","deliverables":["KPI dashboards","A/B comparisons","500-staff scaling","Compliance rules"],"timeline":"4 weeks"},{"phase":"Phase 4: Launch","deliverables":["Freemium billing (Stripe)","SOC2 audit","App Store deploy","User feedback loop"],"timeline":"2 weeks"}]}
+{
+  "productOverview": {
+    "name": "ShiftAI Scheduler",
+    "tagline": "AI-Powered Workforce Optimization: Reduce Labor Costs 25-40% While Maintaining >90% Service Coverage",
+    "targetUsers": "Non-technical managers of small-to-medium service businesses (5-50 staff, scaling to 500): cafes with high-volume walk-ins, spas with appointment-based demand, retail stores, restaurants, salons, fitness centers, and similar service-oriented establishments",
+    "valueProp": "ShiftAI Scheduler uses advanced ML forecasting and constraint-based optimization to generate optimal weekly staff schedules at 15-minute granularity. Primary goal: reduce overtime costs by 25-40% compared to manual scheduling. Secondary goals: minimize understaffing penalties while maintaining >90% coverage at forecasted demand levels, ensure equitable shift distribution to prevent bias, and maintain regulatory compliance (EU Working Time Directive, union rules). Outperforms tools like Deputy and Homebase through real-time ML-driven optimization with freemium pricing (free for <10 staff)."
+  },
+  "features": [
+    {
+      "name": "Demand Forecasting Engine",
+      "description": "ML-powered time-series forecasting using Prophet or LSTM models to predict hourly and 15-minute interval demand over a 7-day horizon. Models incorporate multiple data sources with confidence intervals (80-95% prediction bands). Handles seasonality (daily, weekly, monthly patterns), trends, holidays, and special events. Supports both historical training and real-time inference with retraining recommendations based on forecast accuracy metrics.",
+      "inputs": [
+        "Historical POS/sales data (CSV upload with drag-and-drop interface or camera scan for receipts)",
+        "Reservations/bookings data (CSV or API integrations with booking systems)",
+        "Weather APIs (OpenWeatherMap, Weather.com) - temperature, precipitation, events impact on foot traffic",
+        "Local events calendars (Google Calendar, Eventbrite, Facebook Events API) - concerts, festivals, conferences",
+        "Foot traffic sensors (IoT device APIs, WiFi analytics, or manual entry)",
+        "Historical staff schedules and service levels (for demand validation)",
+        "Business configuration (service type, capacity limits, peak periods)"
+      ],
+      "outputs": [
+        "7-day hourly and 15-minute demand forecasts (JSON format with timestamps)",
+        "Confidence intervals visualization (line charts with shaded uncertainty bands)",
+        "Surge alerts (push notifications for demand spikes >50% above baseline)",
+        "Forecast accuracy metrics (MAPE, RMSE) and model diagnostics",
+        "Demand heatmaps (calendar view showing peak periods)",
+        "Exportable forecast data (CSV, JSON for integration)"
+      ]
+    },
+    {
+      "name": "Staff Optimization Solver",
+      "description": "Constraint-based optimization engine using Google OR-Tools or PuLP integer linear programming to minimize total labor costs while satisfying all business rules and compliance requirements. Solves complex multi-objective problems: primary (overtime reduction), secondary (understaffing penalties, coverage >90%), tertiary (equitable distribution, employee preferences). Supports fuzzy skills matching with cross-training fallbacks and equitable rotation algorithms to prevent scheduling bias (uses seeded randomization and fairness scoring).",
+      "inputs": [
+        "Staff profiles CSV (name, availability windows, skills/proficiency levels, wage rates, max shift length 8 hours, min rest 11 hours between shifts per EU Working Time Directive)",
+        "Skills taxonomy (e.g., 'barista-basic', 'barista-advanced', 'massage-certified', 'cashier-trained')",
+        "Demand forecast (from forecasting engine)",
+        "Manual overrides (fixed assignments, blocked times, preferred shifts)",
+        "Absences (proactive modeling with 10-20% buffer based on historical no-show rates, manual entry, Google Calendar sync, HR integrations like BambooHR)",
+        "Business rules (minimum staffing ratios e.g., 1 staff per 10 customers/hour, multi-location support with location-specific constraints, union rules, break requirements)",
+        "Overtime policies (thresholds, penalty multipliers)",
+        "Cost preferences (minimize total cost, balance cost vs coverage, maximize employee satisfaction)"
+      ],
+      "outputs": [
+        "Optimal weekly schedule (JSON with 15-minute granularity, staff assignments per time slot)",
+        "Cost breakdown (total labor cost, overtime costs, savings vs manual schedule, per-shift costs)",
+        "Coverage analysis (service level metrics, understaffing risk zones, overstaffing identification)",
+        "What-if simulation results (scenario comparisons)",
+        "Compliance report (EU Working Time Directive adherence, break compliance, skill requirements met)",
+        "Equity score (shift distribution fairness metrics, rotation balance)",
+        "Export formats (JSON, CSV, PDF, ICS calendar files)"
+      ]
+    },
+    {
+      "name": "Interactive Schedule Editor",
+      "description": "React-based drag-and-drop calendar interface (FullCalendar or similar) for viewing and editing AI-generated schedules. Supports 15-minute granularity visualization, multi-location views, real-time re-optimization when manual edits are made, and conflict detection. Mobile-responsive design for on-the-go schedule adjustments.",
+      "inputs": [
+        "Generated schedule (from optimization solver)",
+        "User drag-and-drop edits (reassign staff, extend/compress shifts, add/remove shifts)",
+        "Manual staff assignments",
+        "Real-time constraint validation (availability, skills, rest periods)"
+      ],
+      "outputs": [
+        "Updated schedule (immediately reflected in UI)",
+        "Re-optimized suggestions (when manual edits conflict with optimization goals)",
+        "Conflict warnings (overlapping shifts, insufficient rest, skill mismatches)",
+        "Cost impact preview (shows cost delta for manual changes)",
+        "Export options (PDF for printing, ICS for calendar apps, CSV for spreadsheets)",
+        "SMS/Email notifications (via Twilio/SendGrid) to staff with shift details"
+      ]
+    },
+    {
+      "name": "Onboarding Wizard",
+      "description": "Step-by-step guided setup process for non-technical users to configure their business profile, upload initial data, connect integrations, and generate their first schedule. Includes data validation, format suggestions, and AI-powered quick-setup recommendations based on business type.",
+      "inputs": [
+        "Business type selection (cafe, spa, retail, restaurant, etc.)",
+        "Staff CSV upload (drag-and-drop or camera scan) with validation",
+        "Historical sales/POS data (CSV upload)",
+        "Business rules configuration (staffing ratios, operating hours, locations)",
+        "API keys for integrations (optional)",
+        "Staff availability templates"
+      ],
+      "outputs": [
+        "Configured business profile (saved to database)",
+        "Validated and normalized data (with error reports for corrections)",
+        "First demand forecast (7-day preview)",
+        "Initial optimized schedule (with explanation of optimization choices)",
+        "Integration connection status",
+        "Onboarding completion checklist"
+      ]
+    },
+    {
+      "name": "What-If Scenario Simulator",
+      "description": "Interactive tool for managers to test different scenarios before finalizing schedules. Supports demand adjustments (e.g., +50% surge simulations), staff availability changes, cost parameter tuning, and compares multiple scenarios side-by-side with cost and coverage metrics.",
+      "inputs": [
+        "Base schedule (current optimized schedule)",
+        "Scenario parameters (demand multipliers, staff absence simulations, cost changes)",
+        "Constraint adjustments (temporary rule overrides)",
+        "Comparison scenarios (multiple what-if runs)"
+      ],
+      "outputs": [
+        "Scenario comparison dashboard (before/after metrics)",
+        "Cost delta charts (visualization of cost impacts)",
+        "Coverage impact analysis (service level changes)",
+        "Optimal scenario recommendations",
+        "Exportable scenario reports"
+      ]
+    },
+    {
+      "name": "Analytics & Performance Dashboard",
+      "description": "Comprehensive KPI tracking, A/B comparison tools (AI-generated vs manual schedules), ROI reporting, and employee satisfaction metrics. Tracks historical performance trends, forecast accuracy, and optimization effectiveness over time.",
+      "inputs": [
+        "Historical schedules (AI-generated and manual)",
+        "Actual demand data (for forecast accuracy validation)",
+        "Actual labor costs (for savings calculation)",
+        "Employee feedback (NPS surveys, shift preferences)",
+        "Service level metrics (customer wait times, coverage gaps)"
+      ],
+      "outputs": [
+        "KPI dashboard (overtime savings %, service coverage %, employee NPS, forecast accuracy)",
+        "A/B comparison reports (AI vs manual: cost savings, coverage improvement, time saved)",
+        "ROI calculator (showing total savings, payback period, value delivered)",
+        "Benchmark charts (performance trends over time)",
+        "Forecast accuracy metrics (MAPE, RMSE, prediction interval coverage)",
+        "Exportable reports (PDF, CSV for stakeholder sharing)",
+        "Employee satisfaction insights (shift preference trends, fairness perceptions)"
+      ]
+    },
+    {
+      "name": "Multi-Location Support",
+      "description": "Enterprise feature supporting businesses with multiple locations. Centralized scheduling with location-specific constraints, cross-location staff sharing, and aggregate analytics. Each location can have independent operating rules, demand patterns, and staff pools.",
+      "inputs": [
+        "Location profiles (address, operating hours, capacity, business rules)",
+        "Staff location assignments (primary location, cross-location availability)",
+        "Location-specific demand forecasts",
+        "Centralized budget constraints"
+      ],
+      "outputs": [
+        "Multi-location schedule view (unified calendar with location filtering)",
+        "Location-specific schedules (individual location views)",
+        "Cross-location staff utilization reports",
+        "Aggregate cost and coverage metrics"
+      ]
+    },
+    {
+      "name": "Compliance & Regulatory Adherence",
+      "description": "Automated compliance checking for labor regulations including EU Working Time Directive (11-hour rest periods, 48-hour weekly limits), union rules, break requirements, and overtime regulations. Provides compliance reports and alerts for violations before schedule finalization.",
+      "inputs": [
+        "Regulatory rules configuration (region-specific labor laws)",
+        "Union agreements (if applicable)",
+        "Staff contracts (overtime thresholds, break entitlements)",
+        "Generated schedules"
+      ],
+      "outputs": [
+        "Compliance validation report (pass/fail with detailed checks)",
+        "Violation alerts (highlighted conflicts requiring resolution)",
+        "Audit trail (compliance history for regulatory reviews)",
+        "Region-specific compliance templates"
+      ]
+    }
+  ],
+  "uiMockups": [
+    {
+      "screen": "Onboarding Wizard",
+      "description": "Step-by-step mobile-responsive carousel interface guiding new users through initial setup. Progress indicator shows completion status. Includes business type selection, staff CSV upload with drag-and-drop zone and camera scan option, historical data upload, API integration setup (optional), and business rules configuration.",
+      "keyElements": [
+        "Progress bar (step X of Y)",
+        "Camera/Drag-drop zone for CSV uploads with format validation",
+        "AI quick-setup suggestions based on business type",
+        "Next/Back navigation buttons with auto-save",
+        "Format examples and templates (downloadable)",
+        "Real-time validation feedback (green checkmarks for valid data)",
+        "Skip option for optional steps"
+      ]
+    },
+    {
+      "screen": "Dashboard",
+      "description": "Home screen displaying key metrics, upcoming demand forecast peaks, quick actions to generate new schedules, and notification center for alerts. Mobile-optimized cards layout with swipe gestures. Provides at-a-glance view of business health and pending actions.",
+      "keyElements": [
+        "Peak demand graph (interactive line chart with 7-day forecast, zoomable)",
+        "Generate Schedule FAB (floating action button) for quick schedule generation",
+        "Push notification bell (alerts for surges, compliance issues, schedule approvals needed)",
+        "KPI cards (overtime savings %, service coverage %, employee NPS, forecast accuracy)",
+        "Upcoming schedule preview (next 3 days with key highlights)",
+        "Quick stats (total staff, active locations, pending approvals)",
+        "Recent activity feed (schedule changes, forecast updates)"
+      ]
+    },
+    {
+      "screen": "Schedule Calendar",
+      "description": "FullCalendar-based weekly view with 15-minute time slot granularity. Touch-friendly drag-and-drop interface for reassigning staff. Color-coded by skill level, location, or shift type. Multi-location toggle, staff sidebar with search/filter, and real-time re-optimization on manual edits.",
+      "keyElements": [
+        "FullCalendar-like touch grid (weekly view default, daily/monthly toggle)",
+        "15-minute slot visualization (color-coded by staff member or skill level)",
+        "Staff sidebar (searchable/filterable list with availability indicators)",
+        "Drag-drop shift reassignment (with visual feedback and conflict warnings)",
+        "Re-optimize button (AI re-runs optimization after manual edits)",
+        "Export drawer (PDF, ICS, CSV export options)",
+        "Location filter dropdown (for multi-location businesses)",
+        "Skill legend (color coding reference)",
+        "Cost indicator (total daily/weekly cost displayed)",
+        "Coverage heatmap overlay (shows understaffed periods in red)"
+      ]
+    },
+    {
+      "screen": "Forecast View",
+      "description": "Interactive demand forecasting visualization showing predicted customer volume over 7 days with confidence intervals. Supports drill-down to hourly and 15-minute granularity. Overlays historical patterns and special events for context.",
+      "keyElements": [
+        "Time-series line chart (demand forecast with 80-95% confidence bands)",
+        "Interactive zoom and pan (date range selection)",
+        "Historical comparison toggle (compare forecast to previous weeks)",
+        "Event markers (weather events, local events impacting demand)",
+        "Granularity selector (daily, hourly, 15-minute views)",
+        "Export forecast data button",
+        "Forecast accuracy indicator (model confidence score)"
+      ]
+    },
+    {
+      "screen": "What-If Simulator",
+      "description": "Scenario testing interface with sliders and controls for demand adjustments, staff availability changes, and cost parameter tuning. Side-by-side before/after comparison with cost delta visualization. Instant re-optimization for each scenario.",
+      "keyElements": [
+        "Scenario sliders (demand multiplier, staff absence %, cost parameters)",
+        "Before/After comparison panels (side-by-side schedule and metrics)",
+        "Cost delta chart (bar chart showing cost differences)",
+        "Coverage impact visualization (service level changes)",
+        "Apply button (accepts scenario and updates schedule)",
+        "Save scenario option (for future reference)",
+        "Multiple scenario tabs (compare several what-if runs)"
+      ]
+    },
+    {
+      "screen": "Analytics Dashboard",
+      "description": "Comprehensive performance analytics with KPI tracking, A/B comparisons (AI vs manual schedules), ROI calculations, and trend visualizations. Exportable reports for stakeholders.",
+      "keyElements": [
+        "KPI summary cards (overtime savings, coverage %, employee NPS, forecast accuracy)",
+        "Line/bar charts (performance trends over time, A/B comparisons)",
+        "ROI calculator (total savings, payback period, cost-benefit analysis)",
+        "Export PDF/CSV buttons (for stakeholder reports)",
+        "Date range selector (customizable analysis periods)",
+        "Benchmark comparison (industry averages, internal targets)",
+        "Employee satisfaction insights (NPS trends, shift preference analysis)"
+      ]
+    },
+    {
+      "screen": "Staff Profile Management",
+      "description": "Interface for managing staff profiles, availability, skills, and preferences. Bulk import/export capabilities, individual profile editing, and availability template management.",
+      "keyElements": [
+        "Staff list (searchable table with filters)",
+        "Individual profile editor (skills, availability, wage rates, constraints)",
+        "Bulk CSV import/export",
+        "Availability calendar (weekly pattern editor)",
+        "Skills assignment interface (multi-select with proficiency levels)",
+        "Historical assignment analysis (fairness metrics per employee)"
+      ]
+    }
+  ],
+  "technicalArchitecture": {
+    "stack": {
+      "frontend": "React (TypeScript) with React Router for web, or React Native (Expo) for mobile. UI libraries: FullCalendar for schedule visualization, Chart.js/Recharts for analytics, React DnD for drag-and-drop. Responsive design with Tailwind CSS or Material-UI. PWA support for offline capabilities.",
+      "backend": "Python with FastAPI framework for REST API, or Node.js with Express as alternative. Async task processing with Celery (Python) or Bull (Node.js) for long-running ML jobs. WebSocket support (Socket.io or FastAPI WebSockets) for real-time updates. Database: PostgreSQL for relational data, Redis for caching and task queues.",
+      "ai": "Demand Forecasting: Prophet (Facebook) for time-series forecasting with built-in seasonality handling, or LSTM models using TensorFlow/Keras for complex patterns. Scikit-learn for feature engineering and model evaluation. Staff Optimization: Google OR-Tools (Python) for constraint programming and integer linear programming, or PuLP (Python) as alternative. Both support large-scale optimization problems (500+ staff, 7-day horizons). Model serving: FastAPI endpoints or TensorFlow Serving for inference. Dockerized ML pipeline for reproducibility."
+    },
+    "dataFlow": "User uploads data (CSV or API) → FastAPI endpoint validates and stores in PostgreSQL → Celery task queue triggers forecast job → Prophet/LSTM model generates 7-day forecast with confidence intervals → Forecast stored in database → Optimization job triggered (OR-Tools solver) → Solver processes constraints and generates optimal schedule → Results stored in database → WebSocket push notification to frontend → UI updates with new schedule → User can edit via drag-drop → Manual edits trigger re-optimization → Export options (PDF via ReportLab/WeasyPrint, ICS via icalendar library, CSV via pandas) → Notifications sent (Twilio for SMS, SendGrid for email) → Analytics dashboard aggregates historical data for KPI tracking and A/B comparisons.",
+    "integrations": [
+      "Google Calendar API (OAuth 2.0) - sync staff availability and absences",
+      "BambooHR API (OAuth) - employee data, time-off requests, HR integration",
+      "POS Systems (Square API, Lightspeed API, Toast API) - historical sales data ingestion",
+      "Weather APIs (OpenWeatherMap, Weather.com) - weather data for demand forecasting",
+      "Event APIs (Eventbrite API, Facebook Events API, Google Calendar Events) - local events data",
+      "Communication (Twilio API for SMS notifications, SendGrid/Mailgun for email)",
+      "Calendar Export (ICS format for Google Calendar, Outlook, Apple Calendar)",
+      "Payment (Stripe API for freemium billing and subscription management)",
+      "Analytics (optional: Google Analytics, Mixpanel for product analytics)"
+    ]
+  },
+  "metricsAndROI": {
+    "kpis": [
+      {
+        "name": "Overtime Reduction",
+        "target": "25-40% reduction in overtime hours compared to manual scheduling",
+        "benchmark": "30% average reduction across pilot businesses. Example: 10-staff cafe with peak lunch demand (50 customers/hour) - AI schedule: $450 total cost vs manual: $650 total cost (31% savings, $200/week = $10,400/year savings)"
+      },
+      {
+        "name": "Service Level Coverage",
+        "target": ">90% coverage at forecasted demand levels (maintain adequate staffing during predicted peak periods)",
+        "benchmark": "95% coverage at peak demand for pilot cafes. Zero understaffing incidents during forecasted peak periods. Manual schedules average 85% coverage due to over-conservative staffing."
+      },
+      {
+        "name": "Employee Net Promoter Score (NPS)",
+        "target": ">8/10 employee satisfaction with schedule fairness and work-life balance",
+        "benchmark": "Fair rotation algorithms improve employee satisfaction by 20% compared to manual scheduling. Pilot businesses report NPS of 8.2/10 vs 6.5/10 for manual schedules."
+      },
+      {
+        "name": "Forecast Accuracy",
+        "target": "MAPE (Mean Absolute Percentage Error) <15% for hourly demand forecasts, confidence interval coverage 80-95%",
+        "benchmark": "Prophet models achieve 12% MAPE on average for cafe demand forecasting. 90% of actual demand falls within 85% prediction intervals."
+      },
+      {
+        "name": "Solver Performance",
+        "target": "<5 minutes optimization time for 500 staff over 7-day horizon with 15-minute granularity",
+        "benchmark": "OR-Tools handles 10,000+ decision variables efficiently. Typical 50-staff optimization completes in 30-60 seconds. 500-staff optimization completes in 3-4 minutes."
+      },
+      {
+        "name": "Time Savings for Managers",
+        "target": "80% reduction in schedule creation time (from 4-6 hours/week to 30-60 minutes/week including review and edits)",
+        "benchmark": "Pilot managers report schedule creation time reduced from 5 hours to 45 minutes per week (85% time savings)."
+      }
+    ],
+    "pilotExample": "Cafe Scenario: 50 customers/hour lunch peak demand forecasted by Prophet model (confidence: 85% interval 45-55 customers/hour). OR-Tools optimizer generates schedule: 3 basic baristas ($20/hr) + 1 advanced barista ($25/hr) = $450 total cost for peak period. Manual schedule (conservative approach): 4 advanced baristas + 1 basic = $650 total cost. AI savings: $200 (31% reduction). Additional benefits: zero understaffing incidents, compliant 11-hour rest periods, equitable shift rotation (all staff get balanced weekend/weekday mix), employee NPS improved from 6.5 to 8.2. Annual savings: $10,400 in labor costs for this cafe alone."
+  },
+  "implementationRoadmap": [
+    {
+      "phase": "Phase 1: MVP Core (Weeks 1-4)",
+      "deliverables": [
+        "Web-based onboarding wizard (business type selection, CSV upload with validation)",
+        "Basic Prophet demand forecasting (7-day horizon, hourly granularity, single data source)",
+        "OR-Tools scheduler (core constraints: availability, skills, rest periods, max shift length)",
+        "Interactive calendar UI (FullCalendar integration, weekly view, basic drag-drop)",
+        "CSV import/export for staff profiles and schedules",
+        "Basic cost calculation and savings display",
+        "User authentication and multi-tenancy (single business per account)",
+        "PostgreSQL database schema and FastAPI backend structure"
+      ],
+      "timeline": "4 weeks"
+    },
+    {
+      "phase": "Phase 2: Enhanced Forecasting & Optimization (Weeks 5-7)",
+      "deliverables": [
+        "15-minute granularity support (forecast and schedule)",
+        "Multi-source demand forecasting (weather API, events calendar integration)",
+        "Advanced optimization constraints (fuzzy skills matching, equitable rotation, multi-location support)",
+        "What-if scenario simulator (demand adjustments, cost comparisons)",
+        "Forecast confidence intervals visualization",
+        "Improved drag-drop schedule editor with conflict detection",
+        "PDF and ICS export functionality",
+        "Basic analytics dashboard (KPI cards, simple charts)"
+      ],
+      "timeline": "3 weeks"
+    },
+    {
+      "phase": "Phase 3: Integrations & Notifications (Weeks 8-10)",
+      "deliverables": [
+        "Google Calendar integration (OAuth, sync availability and absences)",
+        "BambooHR integration (employee data, time-off sync)",
+        "POS system integrations (Square, Lightspeed APIs for sales data)",
+        "SMS/Email notifications (Twilio, SendGrid) - shift assignments, schedule changes",
+        "Proactive absence modeling (10-20% buffer based on historical data)",
+        "Compliance checking (EU Working Time Directive, break requirements)",
+        "Advanced analytics (A/B comparison tools, ROI calculator)",
+        "Mobile-responsive design optimization"
+      ],
+      "timeline": "3 weeks"
+    },
+    {
+      "phase": "Phase 4: Scale & Polish (Weeks 11-13)",
+      "deliverables": [
+        "Performance optimization (500-staff scalability, <5min solve time)",
+        "Offline mode support (PWA with local storage, sync on reconnect)",
+        "Advanced forecast models (LSTM option, model retraining pipeline)",
+        "Employee feedback system (NPS surveys, shift preference collection)",
+        "Comprehensive compliance rules (union rules, regional labor law templates)",
+        "Edge case handling (surge alerts, zero-staff scenarios, regulatory violations)",
+        "Advanced equity algorithms (bias detection, fairness scoring)",
+        "Multi-location enterprise features"
+      ],
+      "timeline": "3 weeks"
+    },
+    {
+      "phase": "Phase 5: Launch Preparation (Weeks 14-15)",
+      "deliverables": [
+        "Freemium billing integration (Stripe API, pricing tiers: free <10 staff, paid plans for larger businesses)",
+        "SOC2 compliance audit preparation (security, data protection)",
+        "GDPR compliance (data privacy, right to deletion, data portability)",
+        "Production deployment (AWS infrastructure: EC2/ECS, RDS, S3, CloudFront CDN, or Heroku alternative)",
+        "Monitoring and logging (error tracking, performance monitoring, user analytics)",
+        "User documentation (help center, video tutorials, API documentation)",
+        "Beta testing program (10-20 pilot businesses, feedback collection)",
+        "App Store deployment (if mobile app) or web app launch"
+      ],
+      "timeline": "2 weeks"
+    }
+  ]
+}
